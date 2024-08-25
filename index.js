@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -31,13 +31,53 @@ async function run() {
     const assignmentCollection = client
       .db("genius-gala")
       .collection("assignments");
+    const submittedCollection = client
+      .db("genius-gala")
+      .collection("submittedData");
 
-      //Save Created Assignments Data to the DB
-        app.post('/assignments', async(req, res)=>{
-            const assignmentData = req.body;
-            const result = await assignmentCollection.insertOne(assignmentData);
-            res.send(result)
-        })
+    //===========POSTS===============//
+
+    //Save Created Assignments Data to the DB
+    app.post("/assignments", async (req, res) => {
+      const assignmentData = req.body;
+      const result = await assignmentCollection.insertOne(assignmentData);
+      res.send(result);
+    });
+
+    //Save Submitted assignments date in the db
+    app.post("/submitted_assignment", async (req, res) => {
+      const submittedAssignmentData = req.body;
+      // console.log(bidData);
+      const result = await submittedCollection.insertOne(
+        submittedAssignmentData
+      );
+      res.send(result);
+    });
+
+    //===========GETS==============//
+
+    //Get All Assignments data from DB
+    app.get("/assignments", async (req, res) => {
+      const cursor = assignmentCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //get a single data from db using assignment id
+    app.get("/assignment/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignmentCollection.findOne(query);
+      res.send(result);
+    });
+
+    //=============DELETES===============//
+    app.delete("/assignment/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignmentCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
