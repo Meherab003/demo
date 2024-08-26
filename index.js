@@ -71,13 +71,38 @@ async function run() {
       res.send(result);
     });
 
+    //Get All Submitted assignments posted data by a specific user
+    app.get("/my_submitted_assignment/:email", async (req, res) => {
+        const email = req.params.email;
+        const query = { email };
+        const result = await submittedCollection.find(query).toArray();
+        res.send(result);
+      });
+
     //=============DELETES===============//
+    //Delete Assignment by id
     app.delete("/assignment/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await assignmentCollection.deleteOne(query);
       res.send(result);
     });
+
+    //==============PUTS==================//
+    //Update a Assignment data by id
+    app.put("/assignment/:id", async (req, res) => {
+        const id = req.params.id;
+        const updatedAssignment = req.body;
+        const query = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            ...updatedAssignment,
+          },
+        };
+        const result = await assignmentCollection.updateOne(query, updateDoc, options);
+        res.send(result);
+      });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
